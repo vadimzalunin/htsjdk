@@ -25,57 +25,6 @@ public interface Locatable {
 
 
     /**
-   * getSpanningInterval returns interval that covers all of the locations passed in.
-   * @param locations the locations to be spanned (on a single contig)
-   * @return the minimal span that covers all locations (could be null if no locations are passed in).
-   */
-   static Locatable getSpanningInterval(Iterable<? extends Locatable> locations) {
-       int min = Integer.MAX_VALUE;
-       int max = 1;
-       String contig = null;
-       for (Locatable l : locations) {
-           if (contig == null) {
-               contig = l.getContig();
-           } else if (!l.getContig().equals(contig)) {
-               throw new IllegalArgumentException("found different contigs from inputs: " + contig + ","
-                    + l.getContig());
-           }
-
-           if (l.getStart() < min) {
-               min = l.getStart();
-           }
-           if (l.getEnd() > max) {
-               max = l.getEnd();
-           }
-       }
-       if (contig == null) {
-           return null;
-       }
-
-       final String finalContig = contig;
-       final int finalMin = min;
-       final int finalMax = max;
-
-       return new Locatable(){
-           @Override
-           public String getContig() {
-               return finalContig;
-           }
-
-           @Override
-           public int getStart() {
-               return finalMin;
-           }
-
-           @Override
-           public int getEnd() {
-               return finalMax;
-           }
-       };
-   }
-
-
-    /**
     * @return the 0-based start position (from the GA4GH spec).
     */
     default long getGA4GHStart() {return this.getStart() - 1; }
