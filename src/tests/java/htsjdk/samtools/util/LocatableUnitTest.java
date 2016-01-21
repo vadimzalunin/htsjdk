@@ -103,7 +103,7 @@ public class LocatableUnitTest {
 
     @Test(dataProvider = "overlapsWithMargin")
     public void testOverlapWithMargin(final Locatable firstInterval, final Locatable secondInterval, int margin, final boolean expectedOverlapResult ) {
-        Assert.assertEquals(firstInterval.overlapsWithMargin(secondInterval, margin), expectedOverlapResult,
+        Assert.assertEquals(firstInterval.withinDistanceOf(secondInterval, margin), expectedOverlapResult,
                 "overlap() returned incorrect result for intervals " + firstInterval + " and " + secondInterval);
     }
 
