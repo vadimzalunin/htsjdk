@@ -156,7 +156,7 @@ public class VariantContextWriterBuilder {
     public VariantContextWriterBuilder setOutputFile(final File outFile) {
         this.outFile = outFile;
         this.outStream = null;
-        determineOutputTypeFromFilename();
+        determineOutputTypeFromFilename(outFile);
         return this;
     }
 
@@ -170,7 +170,7 @@ public class VariantContextWriterBuilder {
     public VariantContextWriterBuilder setOutputFile(final String outFile) {
         this.outFile = new File(outFile);
         this.outStream = null;
-        determineOutputTypeFromFilename();
+        determineOutputTypeFromFilename(this.outFile);
         return this;
     }
 
@@ -445,16 +445,25 @@ public class VariantContextWriterBuilder {
         return writer;
      }
 
-    private void determineOutputTypeFromFilename() {
-        if (isBCF(this.outFile)) {
+    private void determineOutputTypeFromFilename(final File f) {
+        if (isBCF(f)) {
             this.outType = OutputType.BCF;
-        } else if (isCompressedVCF(this.outFile)) {
+        } else if (isCompressedVCF(f)) {
             this.outType = OutputType.BLOCK_COMPRESSED_VCF;
-        } else if (isVCF(this.outFile)) {
+        } else if (isVCF(f)) {
             this.outType = OutputType.VCF;
         }
         else {
-            this.outType = OutputType.UNSPECIFIED;
+            // See if we have a special file (device, named pipe, etc.)
+            final File canonical = new File(IOUtil.getFullCanonicalPath(this.outFile));
+            if (!canonical.equals(f)) {
+                determineOutputTypeFromFilename(canonical);
+            }
+            else if (f.exists() && !f.isFile() && !f.isDirectory()) {
+                this.outType = OutputType.VCF_STREAM;
+            } else {
+                this.outType = OutputType.UNSPECIFIED;
+            }
         }
     }
 
