@@ -24,6 +24,7 @@
 package htsjdk.samtools.fastq;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Represents a fastq record, fairly literally, i.e. without any conversion.
@@ -31,11 +32,15 @@ import java.io.Serializable;
 public class FastqRecord implements Serializable {
     private static final long serialVersionUID = 1L;
     private final String seqHeaderPrefix;
-    private final String seqLine;
+    private final String seqLine;            //not null, not empty
     private final String qualHeaderPrefix;
-    private final String qualLine;
+    private final String qualLine;           //not null, not empty
 
     public FastqRecord(final String seqHeaderPrefix, final String seqLine, final String qualHeaderPrefix, final String qualLine) {
+        if (seqLine == null || seqLine.isEmpty()) throw new IllegalArgumentException("seqLine was null or empty");
+        if (qualLine == null || qualLine.isEmpty()) throw new IllegalArgumentException("qualLine was null or empty");
+        if (seqLine.length() != qualLine.length()) throw new IllegalArgumentException("seqLine and qualLine must have equal length but were " + seqLine.length() + " and " + qualLine.length());
+
         if (seqHeaderPrefix != null && !seqHeaderPrefix.isEmpty()) this.seqHeaderPrefix = seqHeaderPrefix;
         else this.seqHeaderPrefix = null;
         if (qualHeaderPrefix != null && !qualHeaderPrefix.isEmpty()) this.qualHeaderPrefix = qualHeaderPrefix;
@@ -46,6 +51,7 @@ public class FastqRecord implements Serializable {
     
     /** copy constructor */
     public FastqRecord(final FastqRecord other) {
+        //NOTE: no need to check validity in a copy constructor - we assume the original object was valid
         if( other == null ) throw new IllegalArgumentException("new FastqRecord(null)");
         this.seqHeaderPrefix = other.seqHeaderPrefix;
         this.seqLine = other.seqLine;
@@ -62,20 +68,16 @@ public class FastqRecord implements Serializable {
     /** @return the quality string */
     public String getBaseQualityString() { return qualLine; }
     /** shortcut to getReadString().length() */
-    public int length() { return this.seqLine==null?0:this.seqLine.length();}
+    public int length() { return this.seqLine.length();}
     
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime
-                * result
-                + ((qualHeaderPrefix == null) ? 0 : qualHeaderPrefix.hashCode());
-        result = prime * result
-                + ((qualLine == null) ? 0 : qualLine.hashCode());
-        result = prime * result
-                + ((seqHeaderPrefix == null) ? 0 : seqHeaderPrefix.hashCode());
-        result = prime * result + ((seqLine == null) ? 0 : seqLine.hashCode());
+        result = prime * result + Objects.hashCode(qualHeaderPrefix);
+        result = prime * result + qualLine.hashCode();
+        result = prime * result + Objects.hashCode(seqHeaderPrefix);
+        result = prime * result + seqLine.hashCode();
         return result;
     }
     
@@ -87,28 +89,19 @@ public class FastqRecord implements Serializable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        FastqRecord other = (FastqRecord) obj;
-        if (seqLine == null) {
-            if (other.seqLine != null)
-                return false;
-        } else if (!seqLine.equals(other.seqLine))
+
+        final FastqRecord other = (FastqRecord) obj;
+
+        if (!seqLine.equals(other.seqLine)) {
             return false;
-        if (qualHeaderPrefix == null) {
-            if (other.qualHeaderPrefix != null)
-                return false;
-        } else if (!qualHeaderPrefix.equals(other.qualHeaderPrefix))
+        } else if (! Objects.equals(this.qualHeaderPrefix, other.qualHeaderPrefix)){
             return false;
-        if (qualLine == null) {
-            if (other.qualLine != null)
-                return false;
-        } else if (!qualLine.equals(other.qualLine))
+        } else if (!qualLine.equals(other.qualLine)) {
             return false;
-        if (seqHeaderPrefix == null) {
-            if (other.seqHeaderPrefix != null)
-                return false;
-        } else if (!seqHeaderPrefix.equals(other.seqHeaderPrefix))
+        } else if (! Objects.equals(this.seqHeaderPrefix, other.seqHeaderPrefix)){
             return false;
-        
+        }
+
         return true;
     }
     
@@ -116,9 +109,9 @@ public class FastqRecord implements Serializable {
     public String toString() {
         return new StringBuilder().
                 append(FastqConstants.SEQUENCE_HEADER).append(this.seqHeaderPrefix==null?"":this.seqHeaderPrefix).append('\n').
-                append(this.seqLine==null?"":this.seqLine).append('\n').
+                append(this.seqLine).append('\n').
                 append(FastqConstants.QUALITY_HEADER).append(this.qualHeaderPrefix==null?"":this.qualHeaderPrefix).append('\n').
-                append(this.qualLine==null?"":this.qualLine).
+                append(this.qualLine).
                 toString();
         }
 }
