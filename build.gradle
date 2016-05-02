@@ -1,0 +1,102 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.apache.commons:commons-jexl:2.1.1"
+    compile "commons-logging:commons-logging:1.1.1"
+    compile "org.xerial.snappy:snappy-java:1.0.3-rc3"
+    compile "org.apache.commons:commons-compress:1.4.1"
+    compile "org.tukaani:xz:1.5"
+    compile "org.apache.ant:ant:1.8.2"
+    compile "gov.nih.nlm.ncbi:ngs-java:1.2.2"
+
+    testCompile "org.testng:testng:6.8.8"
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+version="2.0.0"
+
+logger.info("build for version:" + version)
+group = 'com.github.samtools'
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'HTSJDK',
+                'Implementation-Vendor' : 'Broad Institute',
+                'Implementation-Version': version
+    }
+}
+
+task copyLibsForPicard(type: Copy) {
+    into "build/libs"
+    from configurations.compile
+}
+
+import org.gradle.internal.os.OperatingSystem;
+
+test {
+    String CI = "$System.env.CI"
+    useTestNG {
+        if( OperatingSystem.current().isUnix() ){
+            excludeGroups "slow", "broken"
+        } else {
+            excludeGroups "slow", "broken", "unix"
+        }
+    }
+
+    // set heap size for the test JVM(s)
+    minHeapSize = "1G"
+    maxHeapSize = "2G"
+
+    jvmArgs '-Djava.awt.headless=true' //this prevents awt from displaying a java icon while the tests are running
+
+    if (CI == "true") {
+        int count = 0
+        // listen to events in the test execution lifecycle
+        testLogging {
+            events "skipped", "failed"
+            exceptionFormat = "full"
+        }
+
+        beforeTest { descriptor ->
+            count++
+            if( count % 10000 == 0) {
+                logger.lifecycle("Finished "+ Integer.toString(count++) + " tests")
+            }
+        }
+    } else {
+        // show standard out and standard error of the test JVM(s) on the console
+        testLogging.showStandardStreams = true
+        beforeTest { descriptor ->
+            logger.lifecycle("Running Test: " + descriptor)
+        }
+
+        // listen to standard out and standard error of the test JVM(s)
+        onOutput { descriptor, event ->
+            logger.lifecycle("Test: " + descriptor + " produced standard out/err: " + event.message )
+        }
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.8'
+}
+
+// This is a hack to disable the java 8 default javadoc lint until we fix the html formatting
+if (JavaVersion.current().isJava8Compatible()) {
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+}
+
