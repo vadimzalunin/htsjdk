@@ -45,15 +45,8 @@ task copyLibsForPicard(type: Copy) {
 
 import org.gradle.internal.os.OperatingSystem;
 
-test {
-    String CI = "$System.env.CI"
-    useTestNG {
-        if( OperatingSystem.current().isUnix() ){
-            excludeGroups "slow", "broken"
-        } else {
-            excludeGroups "slow", "broken", "unix"
-        }
-    }
+tasks.withType(Test) {
+    useTestNG()
 
     // set heap size for the test JVM(s)
     minHeapSize = "1G"
@@ -61,13 +54,8 @@ test {
 
     jvmArgs '-Djava.awt.headless=true' //this prevents awt from displaying a java icon while the tests are running
 
-    if (CI == "true") {
+    if (System.env.CI == "true") {  //if running under a CI output less into the logs
         int count = 0
-        // listen to events in the test execution lifecycle
-        testLogging {
-            events "skipped", "failed"
-            exceptionFormat = "full"
-        }
 
         beforeTest { descriptor ->
             count++
@@ -86,6 +74,34 @@ test {
         onOutput { descriptor, event ->
             logger.lifecycle("Test: " + descriptor + " produced standard out/err: " + event.message )
         }
+    }
+
+    testLogging {
+        testLogging {
+            events "skipped", "failed"
+            exceptionFormat = "full"
+        }
+        afterSuite { desc, result ->
+            if (!desc.parent) { // will match the outermost suite
+                println "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+            }
+        }
+    }
+}
+
+test {
+    useTestNG {
+        if( OperatingSystem.current().isUnix() ){
+            excludeGroups "slow", "broken", "sra"
+        } else {
+            excludeGroups "slow", "broken", "unix", "sra"
+        }
+    }
+}
+
+task testSRA(type: Test){
+    useTestNG{
+        includeGroups "sra"
     }
 }
 
