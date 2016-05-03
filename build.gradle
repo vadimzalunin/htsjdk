@@ -19,14 +19,13 @@ dependencies {
     compile "org.apache.ant:ant:1.8.2"
     compile "gov.nih.nlm.ncbi:ngs-java:1.2.2"
 
-    testCompile "org.testng:testng:6.8.8"
+    testCompile "org.testng:testng:6.9.9"
 }
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-version="2..0"
-
+version = "2.3.0"
 logger.info("build for version:" + version)
 group = 'com.github.samtools'
 
@@ -43,6 +42,12 @@ task copyLibsForPicard(type: Copy) {
     from configurations.compile
 }
 
+processResources {
+    into "lib/jni/", {
+        from ("lib/jni/libIntelDeflater.so")
+    }
+}
+
 import org.gradle.internal.os.OperatingSystem;
 
 tasks.withType(Test) {
@@ -52,7 +57,8 @@ tasks.withType(Test) {
     minHeapSize = "1G"
     maxHeapSize = "2G"
 
-    jvmArgs '-Djava.awt.headless=true' //this prevents awt from displaying a java icon while the tests are running
+    jvmArgs '-Djava.awt.headless=true',  //this prevents awt from displaying a java icon while the tests are running
+            '-Dsamjdk.intel_deflater_so_path=lib/jni/libIntelDeflater.so'
 
     if (System.env.CI == "true") {  //if running under a CI output less into the logs
         int count = 0
