@@ -46,7 +46,7 @@ import java.util.concurrent.ExecutionException;
  */
 
 public class IntelDeflaterTest {
-    static final File TEST_DIR = new File("testdata/htsjdk/samtools");
+    static final File TEST_DIR = new File("src/test/resources/htsjdk/samtools");
 
     @DataProvider(name="TestIntelDeflaterIsLoadedData")
     Iterator<Object[]> TestIntelDeflaterIsLoadedData(){
