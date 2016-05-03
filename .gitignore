@@ -9,5 +9,4 @@ atlassian-ide-plugin.xml
 
 #gradle stuff
 .gradle/
-gradle/
 build/
