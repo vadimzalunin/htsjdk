@@ -53,7 +53,7 @@ public class GenotypeLikelihoodsUnitTest extends VariantBaseTest {
     final static String vPLString = "93,0,39";
     double[] triAllelic = new double[]{-4.2,-2.0,-3.0,-1.6,0.0,-4.0}; //AA,AB,AC,BB,BC,CC
 
-    @BeforeTest
+    @BeforeTest(alwaysRun = true)
     public void initializeAnyploidPLIndexToAlleleIndices() {
         GenotypeLikelihoods.initializeAnyploidPLIndexToAlleleIndices(1, 1);
         GenotypeLikelihoods.initializeAnyploidPLIndexToAlleleIndices(2, 2);
