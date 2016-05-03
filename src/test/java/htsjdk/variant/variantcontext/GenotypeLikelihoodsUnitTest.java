@@ -55,6 +55,7 @@ public class GenotypeLikelihoodsUnitTest extends VariantBaseTest {
 
     @BeforeTest(alwaysRun = true)
     public void initializeAnyploidPLIndexToAlleleIndices() {
+        GenotypeLikelihoods.anyploidPloidyToPLIndexToAlleleIndices.clear();
         GenotypeLikelihoods.initializeAnyploidPLIndexToAlleleIndices(1, 1);
         GenotypeLikelihoods.initializeAnyploidPLIndexToAlleleIndices(2, 2);
         GenotypeLikelihoods.initializeAnyploidPLIndexToAlleleIndices(2, 3);
