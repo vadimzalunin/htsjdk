@@ -51,6 +51,7 @@ processResources {
 import org.gradle.internal.os.OperatingSystem;
 
 tasks.withType(Test) {
+    outputs.upToDateWhen { false }
     useTestNG()
 
     // set heap size for the test JVM(s)
@@ -65,7 +66,7 @@ tasks.withType(Test) {
 
         beforeTest { descriptor ->
             count++
-            if( count % 10000 == 0) {
+            if( count % 100 == 0) {
                 logger.lifecycle("Finished "+ Integer.toString(count++) + " tests")
             }
         }
