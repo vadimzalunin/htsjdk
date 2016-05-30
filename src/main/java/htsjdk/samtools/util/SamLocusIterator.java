@@ -116,6 +116,7 @@ public class SamLocusIterator implements Iterable<SamLocusIterator.LocusInfo>, C
         public List<RecordAndOffset> getInsertedInRecord() {
             return (insertedInRecord == null) ? Collections.emptyList() : Collections.unmodifiableList(insertedInRecord);
         }
+        public int size() { return this.recordAndOffsets.size() + ((deletedInRecord == null) ? 0 : deletedInRecord.size()); }
 
         /**
          * @return <code>true</code> if all the RecordAndOffset lists are empty;
