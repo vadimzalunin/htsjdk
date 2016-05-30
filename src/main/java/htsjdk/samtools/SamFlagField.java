@@ -91,28 +91,25 @@ public enum SamFlagField {
         @Override
         public String format(final int flag) {
             // Adapted from the the implementation here:
-            //  https://github.com/jmarshall/cansam/blob/master/lib/alignment.cpp
-            // The main difference is no mate flags will be printed unless the read paired flag is set.
-
+            //   https://github.com/jmarshall/cansam/blob/master/lib/alignment.cpp
             final StringBuilder value = new StringBuilder();
 
             if ((flag & SAMFlag.READ_UNMAPPED.flag) != 0)                   value.append('u');
             else                                                            value.append('m');
+
             if ((flag & SAMFlag.READ_REVERSE_STRAND.flag) != 0)             value.append('r');
             else if ((flag & SAMFlag.READ_UNMAPPED.flag) == 0)              value.append('f');
 
-            if ((flag & SAMFlag.READ_PAIRED.flag) != 0) {
-                if ((flag & SAMFlag.MATE_UNMAPPED.flag) != 0)               value.append('U');
-                else
-                    value.append('M');
-                if ((flag & SAMFlag.MATE_REVERSE_STRAND.flag) != 0)         value.append('R');
-                else value.append('F');
+            if ((flag & SAMFlag.MATE_UNMAPPED.flag) != 0)                   value.append('U');
+            else if ((flag & SAMFlag.READ_PAIRED.flag) != 0)                value.append('M');
 
-                                                                            value.append('p');
-                if ((flag & SAMFlag.PROPER_PAIR.flag) != 0)                 value.append('P');
-                if ((flag & SAMFlag.FIRST_OF_PAIR.flag) != 0)               value.append('1');
-                if ((flag & SAMFlag.SECOND_OF_PAIR.flag) != 0)              value.append('2');
-            }
+            if ((flag & SAMFlag.MATE_REVERSE_STRAND.flag) != 0)             value.append('R');
+            else if ((flag & SAMFlag.READ_PAIRED.flag) != 0)                value.append('F');
+
+            if ((flag & SAMFlag.READ_PAIRED.flag) != 0)                     value.append('p');
+            if ((flag & SAMFlag.PROPER_PAIR.flag) != 0)                     value.append('P');
+            if ((flag & SAMFlag.FIRST_OF_PAIR.flag) != 0)                   value.append('1');
+            if ((flag & SAMFlag.SECOND_OF_PAIR.flag) != 0)                  value.append('2');
 
             if ((flag & SAMFlag.NOT_PRIMARY_ALIGNMENT.flag) != 0)           value.append('s');
             if ((flag & SAMFlag.SUPPLEMENTARY_ALIGNMENT.flag) != 0)         value.append('S');

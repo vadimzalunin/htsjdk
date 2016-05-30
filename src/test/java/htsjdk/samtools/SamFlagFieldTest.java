@@ -68,7 +68,7 @@ public class SamFlagFieldTest {
         final int flagAsInteger = SAMFlag.MATE_UNMAPPED.flag;
         final String flagAsString = SamFlagField.STRING.format(flagAsInteger);
 
-        Assert.assertEquals(flagAsString, "mf");
+        Assert.assertEquals(flagAsString, "mfU");
     }
 
     @Test
