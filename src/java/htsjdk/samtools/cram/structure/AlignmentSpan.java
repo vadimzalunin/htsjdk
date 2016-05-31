@@ -14,6 +14,7 @@ public class AlignmentSpan {
     private int start;
     private int span;
     private int count;
+    private long bases;
 
     /**
      * Create a new span with a single read in it.
@@ -34,10 +35,11 @@ public class AlignmentSpan {
      * @param span  alignment span
      * @param count number of reads in the span
      */
-    public AlignmentSpan(final int start, final int span, final int count) {
+    public AlignmentSpan(final int start, final int span, final int count, final long bases) {
         this.setStart(start);
         this.setSpan(span);
         this.count = count;
+        this.bases = bases;
     }
 
     /**
@@ -47,7 +49,7 @@ public class AlignmentSpan {
      * @param span  alignment span
      * @param count number of reads to add
      */
-    public void add(final int start, final int span, final int count) {
+    public void add(final int start, final int span, final int count, final long bases) {
         if (this.getStart() > start) {
             this.setSpan(Math.max(this.getStart() + this.getSpan(), start + span) - start);
             this.setStart(start);
@@ -58,16 +60,7 @@ public class AlignmentSpan {
         }
 
         this.count += count;
-    }
-
-    /**
-     * Add a single read to the span
-     *
-     * @param start alignment start
-     * @param span  read span on the reference
-     */
-    public void addSingle(final int start, final int span) {
-        add(start, span, 1);
+        this.bases += bases;
     }
 
     public int getStart() {
@@ -88,5 +81,13 @@ public class AlignmentSpan {
 
     public int getCount() {
         return count;
+    }
+
+    public long getBases() {
+        return bases;
+    }
+
+    public void setBases(long bases) {
+        this.bases = bases;
     }
 }
