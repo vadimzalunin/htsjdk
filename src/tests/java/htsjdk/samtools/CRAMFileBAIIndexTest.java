@@ -4,6 +4,7 @@ import htsjdk.samtools.cram.build.ContainerParser;
 import htsjdk.samtools.cram.build.CramContainerIterator;
 import htsjdk.samtools.cram.ref.ReferenceSource;
 import htsjdk.samtools.cram.structure.AlignmentSpan;
+import htsjdk.samtools.cram.structure.AlignmentSpanUtils;
 import htsjdk.samtools.cram.structure.Container;
 import htsjdk.samtools.reference.FakeReferenceSequenceFile;
 import htsjdk.samtools.seekablestream.ByteArraySeekableStream;
@@ -179,7 +180,7 @@ public class CRAMFileBAIIndexTest {
         it.hasNext();
         Container secondContainer = it.next();
         Assert.assertNotNull(secondContainer);
-        final Map<Integer, AlignmentSpan> references = new ContainerParser(it.getCramHeader().getSamFileHeader()).getReferences(secondContainer, ValidationStringency.STRICT);
+        final Map<Integer, AlignmentSpan> references = AlignmentSpanUtils.getReferences(secondContainer, ValidationStringency.STRICT);
         it.close();
         int refId = new TreeSet<Integer>(references.keySet()).iterator().next();
         final AlignmentSpan alignmentSpan = references.get(refId);

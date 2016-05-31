@@ -41,6 +41,7 @@ package htsjdk.samtools;
 import htsjdk.samtools.cram.build.ContainerParser;
 import htsjdk.samtools.cram.build.CramIO;
 import htsjdk.samtools.cram.structure.AlignmentSpan;
+import htsjdk.samtools.cram.structure.AlignmentSpanUtils;
 import htsjdk.samtools.cram.structure.Container;
 import htsjdk.samtools.cram.structure.ContainerIO;
 import htsjdk.samtools.cram.structure.CramHeader;
@@ -126,7 +127,7 @@ public class CRAMBAIIndexer {
                 slice.index = sliceIndex++;
                 if (slice.isMultiref()) {
                     final ContainerParser parser = new ContainerParser(indexBuilder.bamHeader);
-                    final Map<Integer, AlignmentSpan> refSet = parser.getReferences(container, validationStringency);
+                    final Map<Integer, AlignmentSpan> refSet = AlignmentSpanUtils.getReferences(container, validationStringency);
                     final Slice fakeSlice = new Slice();
                     slice.containerOffset = container.offset;
                     slice.index = sliceIndex++;

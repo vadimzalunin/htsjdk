@@ -27,6 +27,7 @@ import htsjdk.samtools.cram.encoding.reader.DataReaderFactory;
 import htsjdk.samtools.cram.encoding.reader.DataReaderFactory.DataReaderWithStats;
 import htsjdk.samtools.cram.encoding.reader.RefSeqIdReader;
 import htsjdk.samtools.cram.io.DefaultBitInputStream;
+import htsjdk.samtools.cram.structure.AlignmentSpanMapBuilder;
 import htsjdk.samtools.cram.structure.CompressionHeader;
 import htsjdk.samtools.cram.structure.Container;
 import htsjdk.samtools.cram.structure.CramCompressionRecord;
@@ -49,6 +50,7 @@ public class ContainerParser {
 
     private final SAMFileHeader samFileHeader;
     private final Map<String, Long> nanosecondsMap = new TreeMap<String, Long>();
+    private String readNamePrefix="";
 
     public ContainerParser(final SAMFileHeader samFileHeader) {
         this.samFileHeader = samFileHeader;
@@ -78,60 +80,6 @@ public class ContainerParser {
         }
 
         return records;
-    }
-
-    public Map<Integer, AlignmentSpan> getReferences(final Container container, final ValidationStringency validationStringency) throws IOException {
-        final Map<Integer, AlignmentSpan> containerSpanMap  = new HashMap<>();
-        for (final Slice slice : container.slices) {
-            addAllSpans(containerSpanMap, getReferences(slice, container.header, validationStringency));
-        }
-        return containerSpanMap;
-    }
-
-    private static void addSpan(final int seqId, final int start, final int span, final int count, final Map<Integer, AlignmentSpan> map) {
-        if (map.containsKey(seqId)) {
-            map.get(seqId).add(start, span, count);
-        } else {
-            map.put(seqId, new AlignmentSpan(start, span, count));
-        }
-    }
-
-    private static Map<Integer, AlignmentSpan> addAllSpans(final Map<Integer, AlignmentSpan> spanMap, final Map<Integer, AlignmentSpan> addition) {
-        for (final Map.Entry<Integer, AlignmentSpan> entry:addition.entrySet()) {
-            addSpan(entry.getKey(), entry.getValue().getStart(), entry.getValue().getCount(), entry.getValue().getSpan(), spanMap);
-        }
-        return spanMap;
-    }
-
-    Map<Integer, AlignmentSpan> getReferences(final Slice slice, final CompressionHeader header, final ValidationStringency validationStringency) throws IOException {
-        final Map<Integer, AlignmentSpan> spanMap = new HashMap<>();
-        switch (slice.sequenceId) {
-            case SAMRecord.NO_ALIGNMENT_REFERENCE_INDEX:
-                spanMap.put(SAMRecord.NO_ALIGNMENT_REFERENCE_INDEX, AlignmentSpan.UNMAPPED_SPAN);
-                break;
-            case Slice.MULTI_REFERENCE:
-                final DataReaderFactory dataReaderFactory = new DataReaderFactory();
-                final Map<Integer, InputStream> inputMap = new HashMap<Integer, InputStream>();
-                for (final Integer exId : slice.external.keySet()) {
-                    inputMap.put(exId, new ByteArrayInputStream(slice.external.get(exId)
-                            .getRawContent()));
-                }
-
-                final RefSeqIdReader reader = new RefSeqIdReader(Slice.MULTI_REFERENCE, slice.alignmentStart, validationStringency);
-                dataReaderFactory.buildReader(reader, new DefaultBitInputStream(
-                                new ByteArrayInputStream(slice.coreBlock.getRawContent())),
-                        inputMap, header, slice.sequenceId);
-
-                for (int i = 0; i < slice.nofRecords; i++) {
-                    reader.read();
-                }
-                addAllSpans(spanMap, reader.getReferenceSpans());
-                break;
-            default:
-                addSpan(slice.sequenceId, slice.alignmentStart, slice.alignmentSpan, slice.nofRecords, spanMap);
-                break;
-        }
-        return spanMap;
     }
 
     ArrayList<CramCompressionRecord> getRecords(ArrayList<CramCompressionRecord> records,
@@ -199,6 +147,7 @@ public class ContainerParser {
             }
         }
         log.debug("Slice records read time: " + readNanos / 1000000);
+        CramFragmentPairing cfp = new CramFragmentPairing(slice.globalRecordCounter,readNamePrefix );
 
         final Map<String, DataReaderWithStats> statMap = dataReaderFactory.getStats(reader);
         for (final String key : statMap.keySet()) {
@@ -217,5 +166,9 @@ public class ContainerParser {
     List<CramCompressionRecord> getRecords(final Slice slice, final CompressionHeader header, final ValidationStringency validationStringency)
             throws IllegalArgumentException, IllegalAccessException {
         return getRecords(null, slice, header, validationStringency);
+    }
+
+    public void setReadNamePrefix(final String readNamePrefix) {
+        this.readNamePrefix = readNamePrefix;
     }
 }
