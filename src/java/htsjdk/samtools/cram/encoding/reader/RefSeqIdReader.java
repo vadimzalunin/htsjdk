@@ -237,6 +237,6 @@ public class RefSeqIdReader extends AbstractReader {
 		if (!spans.containsKey(cramRecord.sequenceId)) {
 			spans.put(cramRecord.sequenceId, new AlignmentSpan(alignmentStart, cramRecord.readLength));
 		} else
-			spans.get(cramRecord.sequenceId).addSingle(alignmentStart, cramRecord.readLength);
+			spans.get(cramRecord.sequenceId).add(alignmentStart, cramRecord.readLength, 1, cramRecord.readLength);
 	}
 }
